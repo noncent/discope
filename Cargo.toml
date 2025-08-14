@@ -1,0 +1,20 @@
+[package]
+name = "disk-analyzer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# GUI framework (includes egui)
+eframe = "0.27"
+
+# Native file picker dialog
+rfd = "0.14"
+
+# Human-readable size formatting
+humansize = "2"
+
+# Cross-platform move to Trash
+trash = "3"
+
+# Filesystem walking
+walkdir = "2"
