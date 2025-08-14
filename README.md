@@ -1,6 +1,12 @@
+Here’s your updated `README.md` with the screenshot (`screenshot.png`) included in the appropriate section:
+
+---
+
 # Discope
 
 Discope is a powerful and intuitive cross-platform storage analysis tool built using **Rust**. Designed to help you reclaim valuable space on your HDDs, SSDs, and external drives, Discope delivers fast, visual insights that make managing your storage simple and efficient—whether you’re on Windows, macOS, or Linux.
+
+![Discope Screenshot](screenshot.png)
 
 ## Features
 
@@ -62,4 +68,4 @@ Discope is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Contact
 
-For feedback or help, open an issue or email \[[info@techcorpasia.com](mailto:info@techcorpasia.com)].
+For feedback or help, open an issue or email [info@techcorpasia.com](mailto:info@techcorpasia.com).
