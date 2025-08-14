@@ -12,7 +12,6 @@ pub struct FolderInfo {
 
 #[derive(Clone, Debug)]
 pub struct DiskUsage {
-    pub root: PathBuf,
     pub total_size: u64,
     pub total_human_size: String,
     pub folders: Vec<FolderInfo>,
@@ -32,12 +31,7 @@ impl DiskScanner {
     ) -> Result<DiskUsage, Box<dyn std::error::Error>> {
         let (folders, total_size) = self.collect_folders(path.as_path(), 0, max_depth)?;
         let total_human_size = format_size(total_size, DECIMAL);
-        Ok(DiskUsage {
-            root: path.clone(),
-            total_size,
-            total_human_size,
-            folders,
-        })
+        Ok(DiskUsage { total_size, total_human_size, folders })
     }
 
     fn collect_folders(

@@ -3,7 +3,6 @@ use eframe::egui;
 mod app;
 mod disk_scanner;
 mod ui;
-mod utils;
 
 use app::DiskAnalyzerApp;
 

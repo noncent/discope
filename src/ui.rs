@@ -31,7 +31,7 @@ impl DiskAnalyzerUI {
                     ui.separator();
                     ui.add_space(8.0);
                     egui::ScrollArea::vertical().auto_shrink([false; 2]).show(ui, |ui| {
-                        for folder in &du.folders { Self::render_tree_row(ui, app, folder, 0, du.total_size); }
+                        for (i, folder) in du.folders.iter().enumerate() { Self::render_tree_row(ui, app, folder, 0, i, du.total_size); }
                     });
                 } else {
                     ui.heading("Folders");
@@ -270,17 +270,29 @@ impl DiskAnalyzerUI {
         p.add(egui::Shape::convex_polygon(pts, color, egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(20,20,20,180))));
     }
 
-    fn render_tree_row(ui: &mut egui::Ui, app: &mut DiskAnalyzerApp, folder: &FolderInfo, depth: usize, total_size: u64) {
+    fn render_tree_row(ui: &mut egui::Ui, app: &mut DiskAnalyzerApp, folder: &FolderInfo, depth: usize, color_index: usize, total_size: u64) {
         let indent = 14.0 * depth as f32;
         ui.horizontal(|ui| {
             ui.add_space(indent);
             let expanded = app.is_expanded(&folder.path);
             let is_leaf = folder.children.is_empty();
             if is_leaf { ui.label("  "); } else { let label = if expanded { "−" } else { "+" }; if ui.button(label).clicked() { app.toggle_expanded(&folder.path); } }
-            let label = folder.path.file_name().unwrap_or_default().to_string_lossy();
-            let row = ui.selectable_label(app.get_selected_folder().map(|p| p == &folder.path).unwrap_or(false), label);
-            if row.double_clicked() { app.scan_directory(folder.path.clone()); }
-            else if row.clicked() { app.set_selected_folder(Some(folder.path.clone())); }
+            let label_text = folder.path.file_name().unwrap_or_default().to_string_lossy();
+            let color = Self::dynamic_color(color_index, depth);
+            // Swatch + label grouped for consistent layout
+            let mut row_clicked = false;
+            let mut row_double_clicked = false;
+            ui.horizontal(|ui| {
+                let (swatch_rect, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                ui.painter().rect_filled(swatch_rect, 2.0, color);
+                ui.add_space(6.0);
+                let resp = ui.selectable_label(app.get_selected_folder().map(|p| p == &folder.path).unwrap_or(false), label_text);
+                if resp.clicked() { row_clicked = true; }
+                if resp.double_clicked() { row_double_clicked = true; }
+            });
+            let row = ui.interact(egui::Rect::NAN, ui.id().with("noop"), egui::Sense::hover());
+            if row_double_clicked { app.scan_directory(folder.path.clone()); }
+            else if row_clicked { app.set_selected_folder(Some(folder.path.clone())); }
             if row.hovered() {
                 let pct = if total_size > 0 { (folder.size as f64 / total_size as f64) * 100.0 } else { 0.0 };
                 egui::show_tooltip_at_pointer(ui.ctx(), ui.id().with("rowtip"), |ui: &mut egui::Ui| {
@@ -305,7 +317,7 @@ impl DiskAnalyzerUI {
                 ui.label(humansize::format_size(folder.size, humansize::DECIMAL));
             });
         });
-        if app.is_expanded(&folder.path) { for child in &folder.children { Self::render_tree_row(ui, app, child, depth + 1, total_size); } }
+        if app.is_expanded(&folder.path) { for (j, child) in folder.children.iter().enumerate() { Self::render_tree_row(ui, app, child, depth + 1, j, total_size); } }
     }
 
     fn dynamic_color(i: usize, level: usize) -> egui::Color32 {

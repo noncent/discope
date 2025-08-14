@@ -85,7 +85,7 @@ impl DiskAnalyzerApp {
         Ok(())
     }
 
-    pub fn undo_last_delete(&mut self) -> Result<(), Box<dyn std::error::Error>> { if let Some(_p) = self.recently_deleted.pop_back() { println!("Item moved to Trash. Restore it from the system Trash."); } Ok(()) }
+    // Note: We intentionally omit an undo implementation to avoid misleading users
 
     pub fn get_current_path(&self) -> Option<&PathBuf> { self.current_path.as_ref() }
     pub fn get_disk_usage(&self) -> Option<&DiskUsage> { self.disk_usage.as_ref() }
