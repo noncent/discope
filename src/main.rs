@@ -1,34 +1,49 @@
 use eframe::egui;
+use std::path::{Path, PathBuf};
 
 mod app;
+mod chart;
 mod disk_scanner;
+mod export;
 mod ui;
 
 use app::DiskAnalyzerApp;
 
 fn main() -> Result<(), eframe::Error> {
+    let mut args = std::env::args_os().skip(1);
+    let first = args.next();
+    if first.as_deref() == Some(std::ffi::OsStr::new("--scan")) {
+        let Some(path) = args.next() else {
+            eprintln!("Usage: disk-analyzer --scan <folder>");
+            std::process::exit(2);
+        };
+        match disk_scanner::scan(Path::new(&path), &disk_scanner::ScanControl::default()) {
+            Ok(usage) => {
+                println!(
+                "{} bytes · {} files · {} folders · {} unreadable · {} separate volumes · {:.3} s",
+                usage.size(), usage.files, usage.folders, usage.unreadable, usage.skipped_volumes,
+                usage.elapsed.as_secs_f64(),
+            )
+            }
+            Err(error) => {
+                eprintln!("Scan failed: {error}");
+                std::process::exit(1);
+            }
+        }
+        return Ok(());
+    }
+    let initial = first.map(PathBuf::from);
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1200.0, 800.0])
-            .with_min_inner_size([800.0, 600.0])
-            .with_decorations(true)
-            .with_transparent(false),
+            .with_inner_size([1100.0, 720.0])
+            .with_min_inner_size([800.0, 560.0])
+            .with_drag_and_drop(true),
         ..Default::default()
     };
 
     eframe::run_native(
-        "Discope RC-0.1 | Disk Analyzer | v0.1 | @Author: Noncent",
+        "Discope",
         options,
-        Box::new(|cc| {
-            let fonts = egui::FontDefinitions::default();
-            let font_size = 14.0;
-            cc.egui_ctx.set_fonts(fonts);
-            let mut style = (*cc.egui_ctx.style()).clone();
-            style.text_styles.get_mut(&egui::TextStyle::Body).unwrap().size = font_size;
-            style.text_styles.get_mut(&egui::TextStyle::Heading).unwrap().size = font_size * 1.5;
-            style.text_styles.get_mut(&egui::TextStyle::Button).unwrap().size = font_size;
-            cc.egui_ctx.set_style(style);
-            Box::new(DiskAnalyzerApp::new())
-        }),
+        Box::new(move |cc| Box::new(DiskAnalyzerApp::new(&cc.egui_ctx, initial))),
     )
 }

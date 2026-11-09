@@ -16,5 +16,9 @@ humansize = "2"
 # Cross-platform move to Trash
 trash = "3"
 
-# Filesystem walking
-walkdir = "2"
+# Spreadsheet export and safe replacement of completed reports
+rust_xlsxwriter = { version = "0.102", features = ["constant_memory"] }
+tempfile = "3"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libc = "0.2"
